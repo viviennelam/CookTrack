@@ -16,7 +16,7 @@ export const recipes = pgTable("recipes", {
   title: text("title").notNull(),
   ingredients: text("ingredients").array().notNull(),
   instructions: text("instructions").array().notNull(),
-  imageUrl: text("image_url"),
+  imageData: text("image_data"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   likes: integer("likes").notNull().default(0),
 });
@@ -34,13 +34,16 @@ export const insertUserSchema = createInsertSchema(users).pick({
   password: true,
 });
 
-export const insertRecipeSchema = createInsertSchema(recipes).pick({
-  userId: true,
-  title: true,
-  ingredients: true,
-  instructions: true,
-  imageUrl: true,
-});
+export const insertRecipeSchema = createInsertSchema(recipes)
+  .pick({
+    userId: true,
+    title: true,
+    ingredients: true,
+    instructions: true,
+  })
+  .extend({
+    image: z.any().optional(), 
+  });
 
 export const insertAchievementSchema = createInsertSchema(achievements).pick({
   userId: true,

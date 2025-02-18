@@ -13,7 +13,7 @@ import { useLocation } from "wouter";
 export default function CreateRecipe() {
   const { toast } = useToast();
   const [_, setLocation] = useLocation();
-  
+
   const form = useForm({
     resolver: zodResolver(insertRecipeSchema),
     defaultValues: {
@@ -21,13 +21,30 @@ export default function CreateRecipe() {
       title: "",
       ingredients: [],
       instructions: [],
-      imageUrl: "",
     },
   });
 
   const createRecipe = useMutation({
     mutationFn: async (values: any) => {
-      const res = await apiRequest("POST", "/api/recipes", values);
+      const formData = new FormData();
+      formData.append("userId", values.userId.toString());
+      formData.append("title", values.title);
+      formData.append("ingredients", JSON.stringify(values.ingredients));
+      formData.append("instructions", JSON.stringify(values.instructions));
+      if (values.image) {
+        formData.append("image", values.image);
+      }
+
+      const res = await fetch("/api/recipes", {
+        method: "POST",
+        body: formData,
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to create recipe");
+      }
+
       return res.json();
     },
     onSuccess: () => {
@@ -56,7 +73,7 @@ export default function CreateRecipe() {
               </FormItem>
             )}
           />
-          
+
           <FormField
             control={form.control}
             name="ingredients"
@@ -73,7 +90,7 @@ export default function CreateRecipe() {
               </FormItem>
             )}
           />
-          
+
           <FormField
             control={form.control}
             name="instructions"
@@ -90,20 +107,25 @@ export default function CreateRecipe() {
               </FormItem>
             )}
           />
-          
+
           <FormField
             control={form.control}
-            name="imageUrl"
-            render={({ field }) => (
+            name="image"
+            render={({ field: { value, onChange, ...field } }) => (
               <FormItem>
-                <FormLabel>Image URL</FormLabel>
+                <FormLabel>Image</FormLabel>
                 <FormControl>
-                  <Input placeholder="Image URL" {...field} />
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => onChange(e.target.files?.[0])}
+                    {...field}
+                  />
                 </FormControl>
               </FormItem>
             )}
           />
-          
+
           <Button type="submit" className="w-full" disabled={createRecipe.isPending}>
             {createRecipe.isPending ? "Creating..." : "Share Recipe"}
           </Button>

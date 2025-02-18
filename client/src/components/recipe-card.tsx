@@ -21,10 +21,10 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
         </div>
       </CardHeader>
       <CardContent className="p-0 space-y-4">
-        {recipe.imageUrl ? (
+        {recipe.imageData ? (
           <div className="aspect-square relative">
             <img
-              src={recipe.imageUrl}
+              src={recipe.imageData}
               alt={recipe.title}
               className="object-cover w-full h-full"
             />
