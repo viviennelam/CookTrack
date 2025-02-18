@@ -1,11 +1,11 @@
 import { Link, useLocation } from "wouter";
-import { Home, PlusCircle, User, LogIn } from "lucide-react";
+import { Home, PlusCircle, User, LogIn, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 
 export default function Navbar() {
   const [location] = useLocation();
-  const { user } = useAuth();
+  const { user, logoutMutation } = useAuth();
 
   return (
     <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -42,15 +42,24 @@ export default function Navbar() {
               </Button>
             )}
             {user ? (
-              <Button
-                variant={location.startsWith("/profile") ? "default" : "ghost"}
-                size="icon"
-                asChild
-              >
-                <Link href={`/profile/${user.id}`}>
-                  <a><User className="h-5 w-5" /></a>
-                </Link>
-              </Button>
+              <>
+                <Button
+                  variant={location.startsWith("/profile") ? "default" : "ghost"}
+                  size="icon"
+                  asChild
+                >
+                  <Link href={`/profile/${user.id}`}>
+                    <a><User className="h-5 w-5" /></a>
+                  </Link>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => logoutMutation.mutate()}
+                >
+                  <LogOut className="h-5 w-5" />
+                </Button>
+              </>
             ) : (
               <Button
                 variant={location === "/auth" ? "default" : "ghost"}
