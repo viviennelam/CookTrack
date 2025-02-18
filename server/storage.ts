@@ -3,6 +3,10 @@ import {
   type Recipe, type InsertRecipe,
   type Achievement, type InsertAchievement
 } from "@shared/schema";
+import session from "express-session";
+import createMemoryStore from "memorystore";
+
+const MemoryStore = createMemoryStore(session);
 
 export interface IStorage {
   // User operations
@@ -10,16 +14,19 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUserStreak(id: number, streak: number): Promise<User>;
-  
+
   // Recipe operations
   getRecipes(limit: number, offset: number): Promise<Recipe[]>;
   getRecipesByUser(userId: number): Promise<Recipe[]>;
   createRecipe(recipe: InsertRecipe): Promise<Recipe>;
-  
+
   // Achievement operations
   getAchievements(userId: number): Promise<Achievement[]>;
   createAchievement(achievement: InsertAchievement): Promise<Achievement>;
   updateAchievement(id: number, earned: boolean): Promise<Achievement>;
+
+  // Session store
+  sessionStore: session.Store;
 }
 
 export class MemStorage implements IStorage {
@@ -27,12 +34,16 @@ export class MemStorage implements IStorage {
   private recipes: Map<number, Recipe>;
   private achievements: Map<number, Achievement>;
   private currentIds: { users: number; recipes: number; achievements: number };
+  public sessionStore: session.Store;
 
   constructor() {
     this.users = new Map();
     this.recipes = new Map();
     this.achievements = new Map();
     this.currentIds = { users: 1, recipes: 1, achievements: 1 };
+    this.sessionStore = new MemoryStore({
+      checkPeriod: 86400000 // prune expired entries every 24h
+    });
   }
 
   async getUser(id: number): Promise<User | undefined> {
@@ -60,7 +71,7 @@ export class MemStorage implements IStorage {
   async updateUserStreak(id: number, streak: number): Promise<User> {
     const user = await this.getUser(id);
     if (!user) throw new Error("User not found");
-    
+
     const updatedUser = { ...user, streak };
     this.users.set(id, updatedUser);
     return updatedUser;
@@ -110,7 +121,7 @@ export class MemStorage implements IStorage {
   async updateAchievement(id: number, earned: boolean): Promise<Achievement> {
     const achievement = this.achievements.get(id);
     if (!achievement) throw new Error("Achievement not found");
-    
+
     const updatedAchievement: Achievement = {
       ...achievement,
       earned,
