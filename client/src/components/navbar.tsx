@@ -1,9 +1,11 @@
 import { Link, useLocation } from "wouter";
-import { Home, PlusCircle, User } from "lucide-react";
+import { Home, PlusCircle, User, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function Navbar() {
   const [location] = useLocation();
+  const { user } = useAuth();
 
   return (
     <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -28,24 +30,38 @@ export default function Navbar() {
                 <a><Home className="h-5 w-5" /></a>
               </Link>
             </Button>
-            <Button
-              variant={location === "/create" ? "default" : "ghost"}
-              size="icon"
-              asChild
-            >
-              <Link href="/create">
-                <a><PlusCircle className="h-5 w-5" /></a>
-              </Link>
-            </Button>
-            <Button
-              variant={location.startsWith("/profile") ? "default" : "ghost"}
-              size="icon"
-              asChild
-            >
-              <Link href="/profile/1">
-                <a><User className="h-5 w-5" /></a>
-              </Link>
-            </Button>
+            {user && (
+              <Button
+                variant={location === "/create" ? "default" : "ghost"}
+                size="icon"
+                asChild
+              >
+                <Link href="/create">
+                  <a><PlusCircle className="h-5 w-5" /></a>
+                </Link>
+              </Button>
+            )}
+            {user ? (
+              <Button
+                variant={location.startsWith("/profile") ? "default" : "ghost"}
+                size="icon"
+                asChild
+              >
+                <Link href={`/profile/${user.id}`}>
+                  <a><User className="h-5 w-5" /></a>
+                </Link>
+              </Button>
+            ) : (
+              <Button
+                variant={location === "/auth" ? "default" : "ghost"}
+                size="icon"
+                asChild
+              >
+                <Link href="/auth">
+                  <a><LogIn className="h-5 w-5" /></a>
+                </Link>
+              </Button>
+            )}
           </div>
         </div>
       </div>
