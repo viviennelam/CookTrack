@@ -1,0 +1,119 @@
+Absolutely! Here's a **prompt** you can use in **Replit** to kickstart your "Strava for cooking" MVP project. This prompt outlines the key features, tech stack, and steps to build the app. You can copy and paste this directly into Replit's project description or use it as a guide while building:
+
+---
+
+### **Replit Project Prompt: Strava for Cooking MVP**
+
+#### **Project Overview**
+Build a **minimalist, Gen Z-friendly cooking app** where users can log and track their recipes, share their cooking achievements, and explore a feed of recipes. The app should have a modern, intuitive UI and focus on simplicity and visual appeal.
+
+---
+
+#### **Key Features**
+1. **Recipe Logging**:
+   - Users can log recipes with:
+     - Title
+     - Ingredients (bullet points or simple text)
+     - Steps (short, easy-to-follow instructions)
+     - Photo upload (optional but encouraged)
+   - Include a "Quick Add" feature for fast logging.
+
+2. **Recipe Feed**:
+   - A visually appealing feed of logged recipes (like Instagram but for food).
+   - Display recipe cards with a photo, title, and short description.
+   - Infinite scroll for smooth browsing.
+
+3. **Cooking Streaks**:
+   - Track how many days in a row a user has cooked.
+   - Display a streak counter prominently on the home screen.
+
+4. **Achievements**:
+   - Simple badges for milestones (e.g., "First Recipe Logged," "5 Recipes in a Week").
+   - Add fun animations when users earn badges.
+
+5. **Search and Filter**:
+   - Basic search by recipe name or ingredients.
+   - Filters for categories like "Quick Meals," "Desserts," or "Healthy."
+
+6. **Social Sharing**:
+   - Allow users to share their recipes on social media (Instagram, TikTok, etc.).
+   - Add a "Copy Link" feature for easy sharing.
+
+---
+
+#### **Tech Stack**
+- **Frontend**: React (for a modern, responsive UI).
+- **Styling**: Tailwind CSS (for a clean, minimalist design).
+- **Backend**: Firebase (for authentication, database, and storage).
+- **Database**: Firestore (to store recipes and user data).
+- **Image Storage**: Firebase Storage or Cloudinary.
+- **Deployment**: Replit’s built-in hosting or Vercel.
+
+---
+
+#### **Steps to Build**
+1. **Set Up the Project**:
+   - Create a new React project in Replit.
+   - Install dependencies: `firebase`, `tailwindcss`, `react-icons`.
+
+2. **Design the UI**:
+   - Use Tailwind CSS for a modern, minimalist design.
+   - Create a recipe card component for the feed.
+   - Add a floating action button (FAB) for adding recipes.
+
+3. **Integrate Firebase**:
+   - Set up Firebase Firestore for storing recipes.
+   - Add Firebase Storage for image uploads.
+   - Example: Create a `firebase.js` file to initialize Firebase.
+
+4. **Build Key Features**:
+   - **Recipe Logging**:
+     - Create a form with fields for title, ingredients, steps, and photo upload.
+     - Save recipes to Firestore.
+   - **Recipe Feed**:
+     - Fetch and display recipes from Firestore in a grid or list layout.
+   - **Cooking Streaks**:
+     - Track and display the user’s cooking streak on the home screen.
+
+5. **Add Gamification**:
+   - Create achievements and badges using Firestore.
+   - Add animations when users earn badges.
+
+6. **Test and Debug**:
+   - Use Replit’s live preview feature to test the app in real-time.
+   - Debug directly in the browser using Replit’s built-in tools.
+
+7. **Deploy**:
+   - Use Replit’s built-in hosting to deploy the app.
+   - Alternatively, export the code and deploy to Vercel for better scalability.
+
+---
+
+#### **Example Code Snippets**
+1. **Firebase Setup**:
+   ```javascript
+   // firebase.js
+   import { initializeApp } from "firebase/app";
+   import { getFirestore } from "firebase/firestore";
+   import { getStorage } from "firebase/storage";
+
+   const firebaseConfig = {
+     apiKey: "YOUR_API_KEY",
+     authDomain: "YOUR_AUTH_DOMAIN",
+     projectId: "YOUR_PROJECT_ID",
+     storageBucket: "YOUR_STORAGE_BUCKET",
+     messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+     appId: "YOUR_APP_ID",
+   };
+
+   const app = initializeApp(firebaseConfig);
+   const db = getFirestore(app);
+   const storage = getStorage(app);
+
+   export { db, storage };
+   ```
+
+2. **Recipe Card Component**:
+   ```jsx
+   // RecipeCard.js
+   const RecipeCard = ({ title,
