@@ -1,6 +1,6 @@
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Heart, MessageCircle, Share2 } from "lucide-react";
+import { Heart, MessageCircle, Share2, Image as ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { type Recipe } from "@shared/schema";
 
@@ -20,8 +20,8 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
           <div className="font-semibold">{recipe.title}</div>
         </div>
       </CardHeader>
-      <CardContent className="p-0">
-        {recipe.imageUrl && (
+      <CardContent className="p-0 space-y-4">
+        {recipe.imageUrl ? (
           <div className="aspect-square relative">
             <img
               src={recipe.imageUrl}
@@ -29,7 +29,21 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
               className="object-cover w-full h-full"
             />
           </div>
+        ) : (
+          <div className="aspect-square bg-muted flex items-center justify-center">
+            <ImageIcon className="h-12 w-12 text-muted-foreground" />
+          </div>
         )}
+        <div className="px-4">
+          <h3 className="font-semibold mb-2">Ingredients:</h3>
+          <ul className="list-disc pl-5 space-y-1">
+            {recipe.ingredients.map((ingredient, index) => (
+              <li key={index} className="text-sm text-muted-foreground">
+                {ingredient}
+              </li>
+            ))}
+          </ul>
+        </div>
       </CardContent>
       <CardFooter className="p-4 flex justify-between">
         <div className="flex space-x-4">
