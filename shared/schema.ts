@@ -36,13 +36,12 @@ export const insertUserSchema = createInsertSchema(users).pick({
 
 export const insertRecipeSchema = createInsertSchema(recipes)
   .pick({
-    userId: true,
     title: true,
     ingredients: true,
     instructions: true,
   })
   .extend({
-    image: z.any().optional(), 
+    image: z.instanceof(File).optional(),
   });
 
 export const insertAchievementSchema = createInsertSchema(achievements).pick({

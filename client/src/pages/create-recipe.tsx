@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { insertRecipeSchema } from "@shared/schema";
-import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -22,22 +22,24 @@ export default function CreateRecipe() {
       title: "",
       ingredients: [],
       instructions: [],
+      image: undefined,
     },
   });
 
   const createRecipe = useMutation({
-    mutationFn: async (values: FormData) => {
-      const res = await fetch("/api/recipes", {
+    mutationFn: async (formData: FormData) => {
+      const response = await fetch("/api/recipes", {
         method: "POST",
-        body: values,
+        body: formData,
         credentials: "include",
       });
 
-      if (!res.ok) {
-        throw new Error("Failed to create recipe");
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to create recipe");
       }
 
-      return res.json();
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/recipes"] });
@@ -48,17 +50,28 @@ export default function CreateRecipe() {
       });
       setLocation("/");
     },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
   });
 
-  const onSubmit = (values: any) => {
+  const onSubmit = async (values: any) => {
+    if (!user) return;
+
     const formData = new FormData();
-    formData.append("userId", user?.id.toString() || "");
+    formData.append("userId", user.id.toString());
     formData.append("title", values.title);
-    formData.append("ingredients", JSON.stringify(values.ingredients));
-    formData.append("instructions", JSON.stringify(values.instructions));
-    if (values.image) {
+    formData.append("ingredients", JSON.stringify(values.ingredients.filter(Boolean)));
+    formData.append("instructions", JSON.stringify(values.instructions.filter(Boolean)));
+
+    if (values.image && values.image instanceof File) {
       formData.append("image", values.image);
     }
+
     createRecipe.mutate(formData);
   };
 
@@ -76,6 +89,7 @@ export default function CreateRecipe() {
                 <FormControl>
                   <Input placeholder="Recipe name" {...field} />
                 </FormControl>
+                <FormMessage />
               </FormItem>
             )}
           />
@@ -93,6 +107,7 @@ export default function CreateRecipe() {
                     onChange={(e) => field.onChange(e.target.value.split("\n").filter(Boolean))}
                   />
                 </FormControl>
+                <FormMessage />
               </FormItem>
             )}
           />
@@ -110,6 +125,7 @@ export default function CreateRecipe() {
                     onChange={(e) => field.onChange(e.target.value.split("\n").filter(Boolean))}
                   />
                 </FormControl>
+                <FormMessage />
               </FormItem>
             )}
           />
@@ -124,15 +140,25 @@ export default function CreateRecipe() {
                   <Input
                     type="file"
                     accept="image/*"
-                    onChange={(e) => onChange(e.target.files?.[0])}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        onChange(file);
+                      }
+                    }}
                     {...field}
                   />
                 </FormControl>
+                <FormMessage />
               </FormItem>
             )}
           />
 
-          <Button type="submit" className="w-full" disabled={createRecipe.isPending}>
+          <Button 
+            type="submit" 
+            className="w-full" 
+            disabled={createRecipe.isPending}
+          >
             {createRecipe.isPending ? "Creating..." : "Share Recipe"}
           </Button>
         </form>
