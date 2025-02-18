@@ -1,9 +1,9 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertRecipeSchema, insertUserSchema } from "@shared/schema";
+import { insertRecipeSchema } from "@shared/schema";
 import multer from "multer";
-import { z } from "zod";
+import { setupAuth } from "./auth";
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -13,25 +13,8 @@ const upload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Users
-  app.post("/api/users", async (req, res) => {
-    try {
-      const userData = insertUserSchema.parse(req.body);
-      const user = await storage.createUser(userData);
-      res.json(user);
-    } catch (error) {
-      res.status(400).json({ error: "Invalid user data" });
-    }
-  });
-
-  app.get("/api/users/:id", async (req, res) => {
-    const user = await storage.getUser(parseInt(req.params.id));
-    if (!user) {
-      res.status(404).json({ error: "User not found" });
-      return;
-    }
-    res.json(user);
-  });
+  // Set up authentication routes and middleware
+  setupAuth(app);
 
   // Recipes
   app.get("/api/recipes", async (req, res) => {
@@ -42,9 +25,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post("/api/recipes", upload.single("image"), async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+
     try {
       const recipeData = {
-        userId: parseInt(req.body.userId),
+        userId: req.user!.id,
         title: req.body.title,
         ingredients: JSON.parse(req.body.ingredients),
         instructions: JSON.parse(req.body.instructions),
