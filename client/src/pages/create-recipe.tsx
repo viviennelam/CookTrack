@@ -6,18 +6,19 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useMutation } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function CreateRecipe() {
   const { toast } = useToast();
   const [_, setLocation] = useLocation();
+  const { user } = useAuth();
 
   const form = useForm({
     resolver: zodResolver(insertRecipeSchema),
     defaultValues: {
-      userId: 1, // Hardcoded for MVP
       title: "",
       ingredients: [],
       instructions: [],
@@ -25,19 +26,10 @@ export default function CreateRecipe() {
   });
 
   const createRecipe = useMutation({
-    mutationFn: async (values: any) => {
-      const formData = new FormData();
-      formData.append("userId", values.userId.toString());
-      formData.append("title", values.title);
-      formData.append("ingredients", JSON.stringify(values.ingredients));
-      formData.append("instructions", JSON.stringify(values.instructions));
-      if (values.image) {
-        formData.append("image", values.image);
-      }
-
+    mutationFn: async (values: FormData) => {
       const res = await fetch("/api/recipes", {
         method: "POST",
-        body: formData,
+        body: values,
         credentials: "include",
       });
 
@@ -48,6 +40,8 @@ export default function CreateRecipe() {
       return res.json();
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/recipes"] });
+      queryClient.invalidateQueries({ queryKey: [`/api/users/${user?.id}/recipes`] });
       toast({
         title: "Recipe created!",
         description: "Your recipe has been shared successfully.",
@@ -56,11 +50,23 @@ export default function CreateRecipe() {
     },
   });
 
+  const onSubmit = (values: any) => {
+    const formData = new FormData();
+    formData.append("userId", user?.id.toString() || "");
+    formData.append("title", values.title);
+    formData.append("ingredients", JSON.stringify(values.ingredients));
+    formData.append("instructions", JSON.stringify(values.instructions));
+    if (values.image) {
+      formData.append("image", values.image);
+    }
+    createRecipe.mutate(formData);
+  };
+
   return (
     <div className="max-w-2xl mx-auto">
       <h1 className="text-2xl font-bold mb-6">Create Recipe</h1>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit((values) => createRecipe.mutate(values))} className="space-y-6">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <FormField
             control={form.control}
             name="title"
@@ -83,8 +89,8 @@ export default function CreateRecipe() {
                 <FormControl>
                   <Textarea 
                     placeholder="Enter ingredients (one per line)"
-                    {...field}
-                    onChange={(e) => field.onChange(e.target.value.split("\n"))}
+                    value={field.value?.join("\n") || ""}
+                    onChange={(e) => field.onChange(e.target.value.split("\n").filter(Boolean))}
                   />
                 </FormControl>
               </FormItem>
@@ -100,8 +106,8 @@ export default function CreateRecipe() {
                 <FormControl>
                   <Textarea 
                     placeholder="Enter instructions (one per line)"
-                    {...field}
-                    onChange={(e) => field.onChange(e.target.value.split("\n"))}
+                    value={field.value?.join("\n") || ""}
+                    onChange={(e) => field.onChange(e.target.value.split("\n").filter(Boolean))}
                   />
                 </FormControl>
               </FormItem>

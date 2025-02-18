@@ -95,7 +95,8 @@ export class MemStorage implements IStorage {
       ...insertRecipe,
       id,
       createdAt: new Date(),
-      likes: 0
+      likes: 0,
+      imageData: null // Add this line to fix the type error
     };
     this.recipes.set(id, recipe);
     return recipe;
